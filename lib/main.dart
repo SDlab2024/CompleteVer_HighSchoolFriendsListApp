@@ -14,10 +14,12 @@ class Friend {
   String instaId;
   String meetPlace;
   bool isPinned; //ピンされてるかどうかの属性追加
+  DateTime dateAdded;
 
   Friend(this.name, this.grade, this.club, this.hobby, this.instaId,
       this.meetPlace,
-      {this.isPinned = false}); //ピンされているかどうかもフレンドオブジェクトを作ると生成される
+      {this.isPinned = false,
+      required this.dateAdded}); //ピンされているかどうかもフレンドオブジェクトを作ると生成される
 
   Map<String, dynamic> toJson() {
     return {
@@ -27,7 +29,8 @@ class Friend {
       'hobby': hobby,
       'instaId': instaId,
       'meetPlace': meetPlace,
-      'isPinned': isPinned,
+      'isPinned': isPinned, //追加
+      'dateAdded': dateAdded.toIso8601String(),
     };
   }
 
@@ -39,7 +42,8 @@ class Friend {
       json['hobby'],
       json['instaId'],
       json['meetPlace'],
-      isPinned: json['isPinned'],
+      isPinned: json['isPinned'], //追加
+      dateAdded: DateTime.parse(json['dateAdded']),
     );
   }
 }
@@ -54,6 +58,7 @@ class FriendListApp extends StatelessWidget {
         hintColor: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -86,7 +91,6 @@ class _FriendListPageState extends State<FriendListPage> {
         return AlertDialog(
           title: Text('友達を追加'),
           content: SingleChildScrollView(
-            //スクロール可能にする
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
@@ -103,8 +107,9 @@ class _FriendListPageState extends State<FriendListPage> {
             TextButton(
               onPressed: () {
                 setState(() {
-                  friends.add(
-                      Friend(name, grade, club, hobby, instaId, meetPlace));
+                  friends.add(Friend(
+                      name, grade, club, hobby, instaId, meetPlace,
+                      dateAdded: DateTime.now()));
                   _saveFriends();
                 });
                 Navigator.of(context).pop();
@@ -137,7 +142,6 @@ class _FriendListPageState extends State<FriendListPage> {
         return AlertDialog(
           title: Text('友達を編集'),
           content: SingleChildScrollView(
-            //スクロール可能にする
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
@@ -162,7 +166,8 @@ class _FriendListPageState extends State<FriendListPage> {
                 setState(() {
                   friends[index] = Friend(
                       name, grade, club, hobby, instaId, meetPlace,
-                      isPinned: friends[index].isPinned);
+                      isPinned: friends[index].isPinned,
+                      dateAdded: friends[index].dateAdded);
                   _saveFriends();
                 });
                 Navigator.of(context).pop();
@@ -253,7 +258,7 @@ class _FriendListPageState extends State<FriendListPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('友達リスト'),
-        backgroundColor: Colors.lightBlue[50], // AppBarの背景色を水色に設定
+        backgroundColor: Colors.lightBlue[50],
       ),
       backgroundColor: Colors.lightBlue[50], // Scaffoldの背景色を水色に設定
       body: ListView.builder(
@@ -261,6 +266,8 @@ class _FriendListPageState extends State<FriendListPage> {
         itemBuilder: (context, index) {
           return ListTile(
             title: Text(friends[index].name),
+            //友達の名前の下に追加日時表示
+            subtitle: Text(friends[index].dateAdded.toString()),
             onTap: () => _editFriend(index),
             trailing: Wrap(
               spacing: 12,
